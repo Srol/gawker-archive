@@ -47,20 +47,20 @@ while keepGoing:
 			if len(preTitle) > 50:
 				preTitle = preTitle[:50]
 				preTitle = preTitle.replace(" ", "_")
-				postTitle = "".join([c for c in preTitle if re.match(r"\w", c)])
-				fullTitle = filepath + postTitle
-				if not os.path.exists(os.path.dirname(fullTitle)):
-					try:
-						os.makedirs(os.path.dirname(fullTitle))
-					except OSError as exc:
-						if exc.errno != errno.EEXIST:
-							raise
-				if os.path.isfile(fullTitle):
-					fullTitle = fullTitle + str(notitle)
-					notitle += 1
-				with open(fullTitle + ".txt", "w") as f:
-					f.write("HEADLINE: " + pageSoup.title.text + "\n")
-					f.write("Published on " + timeObject[0].text + "\n")
-					f.write("Original URL : " + a + "\n\n")
-					for graf in pageSoup.findAll("p"):
-						f.write(graf.text + "\n")
+			postTitle = "".join([c for c in preTitle if re.match(r"\w", c)])
+			fullTitle = filepath + postTitle
+			if not os.path.exists(os.path.dirname(fullTitle)):
+				try:
+					os.makedirs(os.path.dirname(fullTitle))
+				except OSError as exc:
+					if exc.errno != errno.EEXIST:
+						raise
+			if os.path.isfile(fullTitle):
+				fullTitle = fullTitle + str(notitle)
+				notitle += 1
+			with open(fullTitle + ".txt", "w") as f:
+				f.write("HEADLINE: " + pageSoup.title.text + "\n")
+				f.write("Published on " + timeObject[0].text + "\n")
+				f.write("Original URL : " + a + "\n\n")
+				for graf in pageSoup.findAll("p"):
+					f.write(graf.text + "\n")
