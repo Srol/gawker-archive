@@ -23,6 +23,8 @@ def main():
 	keepGoing = True
 	# Change below to the URL of the person's Kinja author profile. NOT their kinja site I.E. name.kinja.com, but their profile I.E. kinja.com/name
 
+	print "Starting download for " % args.user
+	
 	while keepGoing:
 		if nextOne != '':
 			print("If the script fails, run this next: python gawker.py --user %s --nextOne %s" % (args.user, nextOne))
