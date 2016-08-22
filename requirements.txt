@@ -1,0 +1,8 @@
+beautifulsoup4==4.5.1
+bs4==0.0.1
+html5lib==0.999999999
+pytz==2013b0
+requests==2.11.1
+six==1.10.0
+timestring==1.6.2
+webencodings==0.5

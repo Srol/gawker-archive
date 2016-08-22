@@ -1,42 +1,55 @@
 from bs4 import BeautifulSoup
-import urllib
+import requests
 import re
 import timestring
 import os
-#import psycopg2
+import argparse
 
-notitle = 1
-# Leave nextOne blank to start at the beginning of a writer's history. If the script errorred and you want to pick up where you left off, add the most recent ?startswith code that was printed out to the console here.
-nextOne = ""
-keepGoing = True
-# Change below to the URL of the person's Kinja author profile. NOT their kinja site I.E. name.kinja.com, but their profile I.E. kinja.com/name
-url = "http://kinja.com/"
+def main():
 
-while keepGoing:
-	print(nextOne)
-	keepGoing = False
-	page = urllib.request.urlopen(url + nextOne).read()
-	soup = BeautifulSoup(page, "html5lib")
-	pageLinks = []
-	for link in soup.findAll("a", {"class": "js_entry-link"}):
-		l = link.get("href")
-		if l not in pageLinks:
-			pageLinks.append(l)
-	for link in soup.findAll("a"):
-		if link.get("href") is not None and link.get("href").startswith("?startTime=") == True and link.get("href") != nextOne:
-			nextOne = link.get("href")
-			keepGoing = True
-	for a in pageLinks:
-		try:
-			articlePage = urllib.request.urlopen(a).read()
-		except urllib.error.HTTPError as e:
-			print("Error fetching article: " + a)
-			print(e)
-		else:
+	parser = argparse.ArgumentParser(description='You a Gawker author? This will scrape some content for you.')
+	parser.add_argument('--user', help='username you want to scrape', required=True)
+	parser.add_argument('--notitle', dest='noTitle', type=int)
+	parser.add_argument('--nextOne', dest='nextOne')
+	parser.set_defaults(noTitle=1)	
+	parser.set_defaults(nextOne="")	
+
+	args = parser.parse_args()
+
+	url = "http://kinja.com/" + args.user
+	notitle = args.noTitle
+	# Leave nextOne blank to start at the beginning of a writer's history. If the script errorred and you want to pick up where you left off, add the most recent ?startswith code that was printed out to the console here.
+	nextOne = args.nextOne
+	keepGoing = True
+	# Change below to the URL of the person's Kinja author profile. NOT their kinja site I.E. name.kinja.com, but their profile I.E. kinja.com/name
+
+	while keepGoing:
+		if nextOne != '':
+			print("If the script fails, run this next: python gawker.py --user %s --nextOne %s" % (args.user, nextOne))
+		keepGoing = False
+		page = requests.get(url + nextOne).text
+		soup = BeautifulSoup(page, "html5lib")
+		pageLinks = []
+		for link in soup.findAll("a", {"class": "js_entry-link"}):
+			l = link.get("href")
+			if l not in pageLinks:
+				pageLinks.append(l)
+		for link in soup.findAll("a"):
+			if link.get("href") is not None and link.get("href").startswith("?startTime=") == True and link.get("href") != nextOne:
+				nextOne = link.get("href")
+				keepGoing = True
+		for a in pageLinks:
+			articlePageRequest = requests.get(a)
+			if articlePageRequest.status_code != 200:
+				print("Error fetching article: " + a)
+				print(articlePageRequest.reason)
+				return
+			articlePage = requests.get(a).text
+
 			pageSoup = BeautifulSoup(articlePage, "html5lib")
 			timeObject = pageSoup.findAll("a", {"class":"js_entry-link js_publish_time"})
 			time = timestring.Date(timeObject[0].text)
-			filepath = str(time.year) + "/" + str(time.month) + "/"
+			filepath = args.user + "/" + str(time.year) + "/" + str(time.month) + "/"
 			preTitle = pageSoup.title.text
 			if pageSoup.p is not None:
 				if preTitle == "Jezebel":
@@ -47,20 +60,23 @@ while keepGoing:
 			if len(preTitle) > 50:
 				preTitle = preTitle[:50]
 				preTitle = preTitle.replace(" ", "_")
-				postTitle = "".join([c for c in preTitle if re.match(r"\w", c)])
-				fullTitle = filepath + postTitle
-				if not os.path.exists(os.path.dirname(fullTitle)):
-					try:
-						os.makedirs(os.path.dirname(fullTitle))
-					except OSError as exc:
-						if exc.errno != errno.EEXIST:
-							raise
-				if os.path.isfile(fullTitle):
-					fullTitle = fullTitle + str(notitle)
-					notitle += 1
-				with open(fullTitle + ".txt", "w") as f:
-					f.write("HEADLINE: " + pageSoup.title.text + "\n")
-					f.write("Published on " + timeObject[0].text + "\n")
-					f.write("Original URL : " + a + "\n\n")
-					for graf in pageSoup.findAll("p"):
-						f.write(graf.text + "\n")
+			postTitle = "".join([c for c in preTitle if re.match(r"\w", c)])
+			fullTitle = filepath + postTitle
+			if not os.path.exists(os.path.dirname(fullTitle)):
+				try:
+					os.makedirs(os.path.dirname(fullTitle))
+				except OSError as exc:
+					if exc.errno != errno.EEXIST:
+						raise
+			if os.path.isfile(fullTitle):
+				fullTitle = fullTitle + str(notitle)
+				notitle += 1
+			with open(fullTitle + ".txt", "w") as f:
+				f.write(("HEADLINE: " + pageSoup.title.text + "\n").encode('utf8'))
+				f.write(("Published on " + timeObject[0].text + "\n").encode('utf8'))
+				f.write(("Original URL : " + a + "\n\n").encode('utf8'))
+				for graf in pageSoup.findAll("p"):
+					f.write((graf.text + "\n").encode('utf8'))
+	print "Completed Successfully!"
+
+if __name__ == "__main__": main()
