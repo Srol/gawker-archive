@@ -4,14 +4,13 @@ This is a file I wrote for some friends who used to work at Gawker to scrape the
 
 ## OS X Installation Instructions:
 
-1) Open a Terminal (Press Command-Space and type "Terminal")
+1) Clone or download this repo
 
-2) Copy and paste the following commands
+2) Open a Terminal (Press Command-Space and type "Terminal"), and navigate to the repo
+
+3) Run the following commands to download the pre-reqs. Your password will be required
 
 ```
-mkdir gawker
-cd gawker
-git clone --recursive https://github.com/Srol/gawker-archive
 sudo easy_install pip
 pip install -r requirements.txt
 ```
