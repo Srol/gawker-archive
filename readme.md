@@ -5,7 +5,9 @@ This is a file I wrote for some friends who used to work at Gawker to scrape the
 ## OS X Installation Instructions:
 
 1) Clone or download this repo
+
 2) Unzip it.
+
 3) Open a Terminal (Press Command-Space and type "Terminal"), and navigate to the repo. Assuming you downloaded and unzipped in the Downloads folder:
 ```
 cd ~/Downloads/gawker-archive/master
