@@ -28,7 +28,7 @@ def main():
 			print("If the script fails, run this next: python gawker.py --user %s --nextOne %s" % (args.user, nextOne))
 		keepGoing = False
 		page = requests.get(url + nextOne).text
-		soup = BeautifulSoup(page, "html5lib")
+		soup = BeautifulSoup(page, "html.parser")
 		pageLinks = []
 		for link in soup.findAll("a", {"class": "js_entry-link"}):
 			l = link.get("href")
@@ -46,7 +46,7 @@ def main():
 				return
 			articlePage = requests.get(a).text
 
-			pageSoup = BeautifulSoup(articlePage, "html5lib")
+			pageSoup = BeautifulSoup(articlePage, "html.parser")
 			timeObject = pageSoup.findAll("a", {"class":"js_entry-link js_publish_time"})
 			time = timestring.Date(timeObject[0].text)
 			filepath = args.user + "/" + str(time.year) + "/" + str(time.month) + "/"
